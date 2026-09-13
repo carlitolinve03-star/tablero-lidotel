@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero Ejecutivo Financiero - LIDOTEL</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        slatebg: '#0f172a',
+                        slatecard: '#1e293b',
+                        profit: '#10b981',
+                        expense: '#ef4444',
+                        accent: '#3b82f6',
+                        accentlight: '#60a5fa',
+                        warning: '#f59e0b',
+                        hotel: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slatebg text-slate-200 p-4 md:p-6 lg:p-8 min-h-screen">
+
+    <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                <i class="fa-solid fa-hotel text-accent"></i> LIDOTEL Tablero Ejecutivo
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">Conexión Segura (Backend) | YTD (Acumulado Total)</p>
+        </div>
+        
+        <div class="flex flex-wrap gap-2 items-center">
+            <select id="monthFilter" class="bg-slatecard border border-slate-600 text-white text-sm rounded-lg focus:ring-accent p-2 outline-none cursor-pointer hover:bg-slate-700 transition">
+                <option value="all">Todo el Año</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+            </select>
+        </div>
+    </header>
+
+    <div id="mainDashboardView">
+        
+        <!-- Tarjetas KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-slatecard rounded-xl border border-slate-700 p-6 shadow-lg">
+                <p class="text-sm text-slate-400 mb-1">Ingresos Totales</p>
+                <h3 id="kpi-revenue" class="text-3xl font-bold text-white mb-2">$0</h3>
+            </div>
+            <div class="bg-slatecard rounded-xl border border-slate-700 p-6 shadow-lg">
+                <p class="text-sm text-slate-400 mb-1">Costos Operativos</p>
+                <h3 id="kpi-costs" class="text-3xl font-bold text-expense mb-2">$0</h3>
+            </div>
+            <div class="bg-slatecard rounded-xl border border-slate-700 p-6 shadow-lg">
+                <p class="text-sm text-slate-400 mb-1">Utilidad Neta</p>
+                <h3 id="kpi-ebitda" class="text-3xl font-bold text-profit mb-2">$0</h3>
+            </div>
+            
+            <div class="bg-slatecard rounded-xl border border-slate-700 p-6 shadow-lg">
+                <p class="text-sm text-slate-400 mb-1">Margen</p>
+                <h3 id="kpi-margin" class="text-3xl font-bold text-accent mb-2">0%</h3>
+            </div>
+            <div class="bg-slatecard rounded-xl border border-slate-700 p-6 shadow-lg">
+                <p class="text-sm text-slate-400 mb-1">Ocupación Promedio</p>
+                <h3 id="kpi-occ" class="text-3xl font-bold text-hotel mb-2">0%</h3>
+            </div>
+            <div class="bg-slatecard rounded-xl border border-slate-700 p-6 shadow-lg">
+                <p class="text-sm text-slate-400 mb-1">Tarifa (ADR)</p>
+                <h3 id="kpi-adr" class="text-3xl font-bold text-hotel mb-2">$0</h3>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="bg-slatecard rounded-xl border border-slate-700 p-6 shadow-lg overflow-x-auto mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-white">Matriz por Sede</h3>
+                <button id="btnSync" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded px-3 py-2 transition flex items-center gap-2">
+                    <i class="fa-solid fa-lock"></i> Conectar con Bóveda
+                </button>
+            </div>
+            <table class="w-full text-left border-collapse min-w-[900px]">
+                <thead>
+                    <tr class="border-b border-slate-600 text-slate-400 text-xs uppercase">
+                        <th class="py-3 px-4">Sede</th>
+                        <th class="py-3 px-4 text-center">Ocup. %</th>
+                        <th class="py-3 px-4 text-right">Tarifa</th>
+                        <th class="py-3 px-4 text-right">Ingresos</th>
+                        <th class="py-3 px-4 text-right">Utilidad</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="text-sm">
+                    <tr><td colspan="5" class="text-center text-slate-500 py-4">Haz clic en 'Conectar' para pedir los datos al servidor.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div id="toastNotification" class="fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-4 rounded shadow-2xl transition-transform duration-300 translate-y-20 opacity-0 z-50 pointer-events-none">
+        <span id="toastMessage" class="text-sm font-medium"></span>
+    </div>
+
+    <script>
+        const formatCurrency = (val) => new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
+        const formatPercent = (val) => (val).toFixed(1).replace('.', ',') + '%';
+
+        let dashboardData = []; 
+
+        // ESTA ES LA MAGIA DEL CAMINO B: 
+        // Ya no llamamos a Google, llamamos a NUESTRO propio Agente Seguro en Netlify
+        async function fetchSecureData() {
+            showToast("Contactando al Agente Seguro en Netlify...");
+            
+            try {
+                // Llama a la función serverless que creamos en api-finanzas.js
+                const respuesta = await fetch('/.netlify/functions/api-finanzas');
+                
+                if (!respuesta.ok) {
+                    throw new Error("Error en el servidor o credenciales inválidas.");
+                }
+
+                // Recibimos los datos ya limpios en formato JSON
+                const filas = await respuesta.json();
+                
+                let datosLimpios = [];
+                
+                // Limpiamos los números que vienen de tu Excel
+                filas.forEach(fila => {
+                    const sede = fila.Sede || "Desconocida";
+                    const mes = parseInt(fila.Mes) || 0;
+                    const ocupacion = parseFloat((fila.Ocupacion_Pct || "0").toString().replace(',', '.')) || 0;
+                    const tarifa = parseFloat((fila.Tarifa_Promedio || "0").toString().replace('$', '').replace(',', '.')) || 0;
+                    
+                    // Sumas de Ingresos (Ejemplo de las columnas que subiste en la foto)
+                    const ingHab = parseFloat((fila.Ing_Habitaciones || "0").toString().replace(',', '.')) || 0;
+                    const ingAyB = parseFloat((fila.Ing_AyB || "0").toString().replace(',', '.')) || 0;
+                    const ingOtros = parseFloat((fila.Ing_Diamond || "0").toString().replace(',', '.')) || 0; 
+                    const ingresoTotal = ingHab + ingAyB + ingOtros; // Ajusta esto sumando tus demás columnas de ingresos
+                    
+                    // Sumas de Gastos (Simplificado para el ejemplo)
+                    const costosOp = parseFloat((fila.Operativos || "0").toString().replace(',', '.')) || 0;
+                    const nomina = parseFloat((fila.Nomina || "0").toString().replace(',', '.')) || 0;
+                    const costoTotal = costosOp + nomina; // Ajusta esto sumando tus demás columnas de gastos
+
+                    if (mes > 0) {
+                        datosLimpios.push({
+                            cityName: sede, month: mes, ocupacion: ocupacion, tarifa: tarifa, 
+                            revenue: ingresoTotal, costs: costoTotal, ebitda: ingresoTotal - costoTotal
+                        });
+                    }
+                });
+                
+                dashboardData = datosLimpios;
+                updateDashboard();
+                showToast("✅ Datos descargados de la bóveda exitosamente.");
+                
+            } catch (error) {
+                console.error(error);
+                showToast("❌ Error: Verifica tu configuración de Netlify.", true);
+            }
+        }
+
+        function updateDashboard() {
+            if (dashboardData.length === 0) return;
+
+            const monthFilter = document.getElementById('monthFilter').value;
+            let filteredData = monthFilter === 'all' ? dashboardData : dashboardData.filter(d => d.month === parseInt(monthFilter));
+
+            let totalRev = 0, totalCost = 0, totalEbitda = 0;
+            let sumOcupacion = 0, sumTarifa = 0, countRecords = 0;
+            let cityGrouping = {};
+            
+            filteredData.forEach(d => {
+                totalRev += d.revenue; totalCost += d.costs; totalEbitda += d.ebitda;
+                sumOcupacion += d.ocupacion; sumTarifa += d.tarifa; countRecords++;
+                
+                if(!cityGrouping[d.cityName]) cityGrouping[d.cityName] = { rev: 0, cost: 0, ebitda: 0, ocup: 0, adr: 0, count: 0 };
+                cityGrouping[d.cityName].rev += d.revenue; cityGrouping[d.cityName].ebitda += d.ebitda;
+                cityGrouping[d.cityName].ocup += d.ocupacion; cityGrouping[d.cityName].adr += d.tarifa;
+                cityGrouping[d.cityName].count++;
+            });
+
+            document.getElementById('kpi-revenue').textContent = formatCurrency(totalRev);
+            document.getElementById('kpi-costs').textContent = formatCurrency(totalCost);
+            document.getElementById('kpi-ebitda').textContent = formatCurrency(totalEbitda);
+            document.getElementById('kpi-margin').textContent = formatPercent(totalRev > 0 ? (totalEbitda/totalRev)*100 : 0);
+            document.getElementById('kpi-occ').textContent = formatPercent(countRecords > 0 ? sumOcupacion/countRecords : 0);
+            document.getElementById('kpi-adr').textContent = formatCurrency(countRecords > 0 ? sumTarifa/countRecords : 0);
+
+            let tableHtmlString = '';
+            Object.keys(cityGrouping).forEach(key => {
+                const row = cityGrouping[key];
+                tableHtmlString += `
+                    <tr class="border-b border-slate-700/50 hover:bg-slate-700/30">
+                        <td class="py-3 px-4 text-white">${key}</td>
+                        <td class="py-3 px-4 text-center text-hotel">${formatPercent(row.count > 0 ? row.ocup/row.count : 0)}</td>
+                        <td class="py-3 px-4 text-right text-hotel">${formatCurrency(row.count > 0 ? row.adr/row.count : 0)}</td>
+                        <td class="py-3 px-4 text-right text-slate-300">${formatCurrency(row.rev)}</td>
+                        <td class="py-3 px-4 text-right font-bold ${row.ebitda >= 0 ? 'text-profit' : 'text-expense'}">${formatCurrency(row.ebitda)}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('table-body').innerHTML = DOMPurify.sanitize(tableHtmlString);
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastNotification');
+            toast.className = `fixed bottom-4 right-4 px-6 py-4 rounded shadow-2xl transition-transform duration-300 z-50 border-l-4 ${isError ? 'bg-slate-800 border-red-500' : 'bg-slate-800 border-emerald-500'}`;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3500);
+        }
+
+        window.onload = () => {
+            document.getElementById('btnSync').addEventListener('click', fetchSecureData);
+            document.getElementById('monthFilter').addEventListener('change', updateDashboard);
+        };
+    </script>
+</body>
+</html>
