@@ -168,7 +168,7 @@
                 <div class="relative h-64 w-full"><canvas id="trendChart"></canvas></div>
             </div>
 
-            <!-- Nuevo: Egresos en Barras Comparativas -->
+            <!-- Nuevo: Egresos en Barras Comparativas (Agrupadas por Mes) -->
             <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm">
                 <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Análisis de Egresos por Sede</h3>
                 <div class="relative h-64 w-full flex justify-center"><canvas id="expensesChart"></canvas></div>
@@ -200,7 +200,7 @@
         const formatPercent = (val) => (isNaN(val) ? 0 : val).toFixed(1) + '%';
         const monthsNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        // DICCIONARIO EXACTO DE COLUMNAS (Basado en requerimientos quirúrgicos)
+        // DICCIONARIO EXACTO DE COLUMNAS 
         const ingresosConfig = [
             { id: 'Ing_Habitaciones', label: 'Habitaciones' }, { id: 'Ing_AyB', label: 'AyB' },
             { id: 'Ing_Diamond', label: 'Diamond' }, { id: 'Ing_Consignacion', label: 'Consignación' },
@@ -333,7 +333,7 @@
                     if (respuesta.ok) filas = await respuesta.json();
                     else throw new Error("Netlify Error");
                 } else {
-                    // Generador de datos MOCK con columnas exactas para la Preview
+                    // Generador de datos MOCK para la Preview
                     const sedes = ["Caracas", "Margarita", "Valencia", "Barquisimeto", "Paraguana", "San Cristobal"];
                     filas = sedes.flatMap(sede => Array.from({length: 6}, (_, i) => {
                         let row = { Sede: sede, Mes: i+1, Ocupacion_Pct: 40 + Math.random()*50, Tarifa_Promedio: 80 + Math.random()*100 };
@@ -395,7 +395,19 @@
             revenueChart = new Chart(ctxRev, { type: 'doughnut', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } } });
 
             const ctxExp = document.getElementById('expensesChart').getContext('2d');
-            expensesChart = new Chart(ctxExp, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } } }, plugins: { legend: { position: 'right', display: false } } } });
+            expensesChart = new Chart(ctxExp, { 
+                type: 'bar', 
+                data: { labels: [], datasets: [] }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { stacked: true, grid: { display: false } }, 
+                        y: { stacked: true, grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } } 
+                    }, 
+                    plugins: { legend: { position: 'right', display: false } } 
+                } 
+            });
 
             const ctxAdrOcc = document.getElementById('adrOccChart').getContext('2d');
             adrOccChart = new Chart(ctxAdrOcc, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', position: 'left', grid: gridConfig, ticks: { callback: v => '$' + v } }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } } } });
@@ -422,13 +434,10 @@
                 ingresosConfig.forEach(ing => monthlyTrend[i].incDetails[ing.id] = 0);
             }
             
-            // Totales por Categoría (Doughnut y Egresos Barras)
             let sumIncByType = {}; ingresosConfig.forEach(i => sumIncByType[i.id] = 0);
-            let cityExpenses = {};
 
             filteredData.forEach(d => {
                 if(!cityGrouping[d.cityName]) cityGrouping[d.cityName] = { rev: 0, cost: 0 };
-                if(!cityExpenses[d.cityName]) cityExpenses[d.cityName] = {};
                 
                 // Calcular ingresos de esta fila según segmentador
                 let rowRev = 0;
@@ -442,8 +451,6 @@
                 let rowCost = 0;
                 selectedEgresos.forEach(egrId => {
                     rowCost += d.expenses[egrId];
-                    if(!cityExpenses[d.cityName][egrId]) cityExpenses[d.cityName][egrId] = 0;
-                    cityExpenses[d.cityName][egrId] += d.expenses[egrId];
                 });
 
                 totalRev += rowRev;
@@ -510,18 +517,37 @@
             };
             trendChart.update();
 
-            // Chart 4: Egresos en Barras Comparativas
-            const dsExpenses = selectedEgresos.map((egrId, index) => {
-                const config = egresosConfig.find(e => e.id === egrId);
-                return {
-                    label: config.label,
-                    data: labelsCity.map(city => cityExpenses[city][egrId] || 0),
-                    backgroundColor: getColor(index),
-                };
+            // Chart 4: MODIFICACIÓN QUIRÚRGICA - Barras Apiladas por Mes Lado a Lado
+            let dsExpenses = [];
+            const activeMonthsSorted = [...selectedMeses].sort((a,b) => a - b);
+            
+            activeMonthsSorted.forEach(monthVal => {
+                const monthName = monthsNames[monthVal - 1];
+                
+                selectedEgresos.forEach((egrId, index) => {
+                    const config = egresosConfig.find(e => e.id === egrId);
+                    
+                    // Extraer los datos específicos de ese mes para todas las ciudades seleccionadas
+                    const dataForDataset = labelsCity.map(city => {
+                        const record = dashboardData.find(d => d.cityName === city && d.month === monthVal);
+                        return record && record.expenses[egrId] ? record.expenses[egrId] : 0;
+                    });
+                    
+                    // Solo dibujar si este mes y rubro tienen algún valor (limpia la leyenda)
+                    if(dataForDataset.some(val => val > 0)) {
+                        dsExpenses.push({
+                            label: `${config.label} (${monthName})`,
+                            data: dataForDataset,
+                            backgroundColor: getColor(index), // Mismo color para el mismo gasto siempre
+                            stack: `StackMes${monthVal}` // ESTA ES LA MAGIA: Apila los datos del mismo mes y pone los meses uno al lado del otro
+                        });
+                    }
+                });
             });
+
             expensesChart.data = { labels: labelsCity, datasets: dsExpenses };
-            // Mostrar leyenda solo si hay pocos items, si no, se ensucia el grafico
-            expensesChart.options.plugins.legend.display = selectedEgresos.length <= 10;
+            // Mostrar leyenda si la cantidad de datasets (barras) no ensucia la vista
+            expensesChart.options.plugins.legend.display = dsExpenses.length <= 12;
             expensesChart.update();
 
             // Chart 5: ADR vs Occ
