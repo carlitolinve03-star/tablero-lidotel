@@ -168,10 +168,10 @@
                 <div class="relative h-64 w-full"><canvas id="trendChart"></canvas></div>
             </div>
 
-            <!-- Nuevo: Egresos en Barras Comparativas (Agrupadas por Mes) -->
+            <!-- Nuevo: Destino de Ingresos (Barras Horizontales) -->
             <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Análisis de Egresos por Sede</h3>
-                <div class="relative h-64 w-full flex justify-center"><canvas id="expensesChart"></canvas></div>
+                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Destino de Ingresos (Egresos)</h3>
+                <div class="relative h-64 w-full flex justify-center"><canvas id="expenseDestChart"></canvas></div>
             </div>
         </div>
 
@@ -185,6 +185,15 @@
             <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm">
                 <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Evolución Mensual de Ingresos por Tipo</h3>
                 <div class="relative h-64 w-full"><canvas id="incomeEvolutionChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Fila 4: Análisis de Egresos por Sede (Ampliado y Movido abajo) -->
+        <div class="grid grid-cols-1 gap-6 mb-6">
+            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm w-full">
+                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Análisis de Egresos por Sede</h3>
+                <!-- Incrementamos la altura (h-96) para que puedas detallar mejor la comparación de los meses -->
+                <div class="relative h-96 w-full flex justify-center"><canvas id="expensesChart"></canvas></div>
             </div>
         </div>
 
@@ -227,7 +236,7 @@
         const getColor = (i) => luxuryColors[i % luxuryColors.length];
 
         let dashboardData = []; 
-        let cityChart, trendChart, revenueChart, expensesChart, adrOccChart, incomeEvolutionChart;
+        let cityChart, trendChart, revenueChart, expensesChart, adrOccChart, incomeEvolutionChart, expenseDestChart;
         
         // Estado de los Segmentadores
         let selectedSedes = [];
@@ -394,6 +403,34 @@
             const ctxRev = document.getElementById('revenueChart').getContext('2d');
             revenueChart = new Chart(ctxRev, { type: 'doughnut', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } } });
 
+            const ctxExpDest = document.getElementById('expenseDestChart').getContext('2d');
+            expenseDestChart = new Chart(ctxExpDest, { 
+                type: 'bar', 
+                data: { labels: [], datasets: [] }, 
+                options: { 
+                    indexAxis: 'y', // Lo convierte en barras horizontales
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }, 
+                        y: { grid: { display: false } } 
+                    }, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const val = context.raw;
+                                    const total = context.chart._customTotal || 1;
+                                    const pct = ((val / total) * 100).toFixed(1) + '%';
+                                    return `${formatCurrency(val)} (${pct})`; // Muestra Monto + Porcentaje
+                                }
+                            }
+                        }
+                    } 
+                } 
+            });
+
             const ctxExp = document.getElementById('expensesChart').getContext('2d');
             expensesChart = new Chart(ctxExp, { 
                 type: 'bar', 
@@ -516,6 +553,41 @@
                 ]
             };
             trendChart.update();
+
+            let expenseDestData = [];
+            let grandTotalExpenses = 0;
+            
+            selectedEgresos.forEach((egrId, index) => {
+                const config = egresosConfig.find(e => e.id === egrId);
+                let totalForThisExpense = 0;
+                
+                filteredData.forEach(d => {
+                    totalForThisExpense += (d.expenses[egrId] || 0);
+                });
+                
+                if (totalForThisExpense > 0) {
+                    expenseDestData.push({
+                        label: config.label,
+                        amount: totalForThisExpense,
+                        color: getColor(index)
+                    });
+                    grandTotalExpenses += totalForThisExpense;
+                }
+            });
+
+            // Ordenar de mayor a menor gasto
+            expenseDestData.sort((a, b) => b.amount - a.amount);
+
+            expenseDestChart._customTotal = grandTotalExpenses || 1; 
+            expenseDestChart.data = {
+                labels: expenseDestData.map(d => d.label),
+                datasets: [{
+                    data: expenseDestData.map(d => d.amount),
+                    backgroundColor: expenseDestData.map(d => d.color),
+                    borderRadius: 2
+                }]
+            };
+            expenseDestChart.update();
 
             // Chart 4: MODIFICACIÓN QUIRÚRGICA - Barras Apiladas por Mes Lado a Lado
             let dsExpenses = [];
