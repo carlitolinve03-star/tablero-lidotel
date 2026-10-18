@@ -342,12 +342,12 @@
                     if (respuesta.ok) filas = await respuesta.json();
                     else throw new Error("Netlify Error");
                 } else {
-                    // Generador de datos MOCK para la Preview
+                    // Generador de datos MOCK para la Preview (Modificado para usar enteros)
                     const sedes = ["Caracas", "Margarita", "Valencia", "Barquisimeto", "Paraguana", "San Cristobal"];
                     filas = sedes.flatMap(sede => Array.from({length: 6}, (_, i) => {
-                        let row = { Sede: sede, Mes: i+1, Ocupacion_Pct: 40 + Math.random()*50, Tarifa_Promedio: 80 + Math.random()*100 };
-                        ingresosConfig.forEach(ing => row[ing.id] = (Math.random() * 50000) + 5000);
-                        egresosConfig.forEach(egr => row[egr.id] = (Math.random() * 15000) + 1000);
+                        let row = { Sede: sede, Mes: i+1, Ocupacion_Pct: Math.floor(40 + Math.random()*50), Tarifa_Promedio: Math.floor(80 + Math.random()*100) };
+                        ingresosConfig.forEach(ing => row[ing.id] = Math.floor((Math.random() * 50000) + 5000));
+                        egresosConfig.forEach(egr => row[egr.id] = Math.floor((Math.random() * 15000) + 1000));
                         return row;
                     }));
                 }
@@ -356,7 +356,8 @@
                 filas.forEach(fila => {
                     const getVal = (k) => {
                         const foundKey = Object.keys(fila).find(fk => fk.toLowerCase() === k.toLowerCase());
-                        return foundKey ? parseFloat((fila[foundKey]||"0").toString().replace('$', '').replace(',', '.')) || 0 : 0;
+                        // ¡ÚNICA LÍNEA MODIFICADA PARA ARREGLAR LOS DECIMALES Y PUNTOS DE MILES!
+                        return foundKey ? parseFloat((fila[foundKey]||"0").toString().replace(/\$/g, '').replace(/\./g, '').replace(',', '.')) || 0 : 0;
                     };
 
                     const sedeStr = Object.keys(fila).find(k => k.toLowerCase() === 'sede' || k.toLowerCase() === 'hotel');
