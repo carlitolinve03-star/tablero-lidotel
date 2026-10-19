@@ -9,6 +9,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
@@ -42,6 +43,9 @@
         .cb-gold { accent-color: #bda269; width: 14px; height: 14px; cursor: pointer; }
         .dropdown-content { display: none; transform: translateY(-5px); opacity: 0; transition: all 0.2s ease; }
         .dropdown-content.show { display: block; transform: translateY(0); opacity: 1; }
+        
+        /* Transición suave para cuando las tarjetas se expanden o colapsan */
+        .flex-auto-transition { transition: all 0.4s ease-in-out; }
     </style>
 </head>
 <body class="bg-slatebg text-slate-200 p-4 md:p-6 lg:p-8 min-h-screen font-sans">
@@ -53,10 +57,8 @@
             </h1>
         </div>
         
-        <!-- Contenedor de Filtros Multi-Selección -->
         <div class="flex flex-wrap gap-2 items-center w-full xl:w-auto z-50">
             
-            <!-- Segmentador: Sedes -->
             <div class="relative" id="container-sede">
                 <button id="btn-sede" class="bg-slatecard border border-graylight text-white text-xs font-medium rounded px-3 py-2 hover:border-accent transition flex justify-between items-center gap-2 w-40">
                     <span id="label-sede" class="truncate">Sedes (Todas)</span> <i class="fa-solid fa-chevron-down text-[10px] text-textmuted"></i>
@@ -70,7 +72,6 @@
                 </div>
             </div>
 
-            <!-- Segmentador: Meses -->
             <div class="relative" id="container-mes">
                 <button id="btn-mes" class="bg-slatecard border border-graylight text-white text-xs font-medium rounded px-3 py-2 hover:border-accent transition flex justify-between items-center gap-2 w-36">
                     <span id="label-mes" class="truncate">Meses (Todos)</span> <i class="fa-solid fa-chevron-down text-[10px] text-textmuted"></i>
@@ -84,7 +85,6 @@
                 </div>
             </div>
 
-            <!-- Segmentador: Ingresos -->
             <div class="relative" id="container-ing">
                 <button id="btn-ing" class="bg-slatecard border border-graylight text-white text-xs font-medium rounded px-3 py-2 hover:border-accent transition flex justify-between items-center gap-2 w-44">
                     <span id="label-ing" class="truncate">Ingresos (Todos)</span> <i class="fa-solid fa-chevron-down text-[10px] text-textmuted"></i>
@@ -98,7 +98,6 @@
                 </div>
             </div>
 
-            <!-- Segmentador: Egresos -->
             <div class="relative" id="container-egr">
                 <button id="btn-egr" class="bg-slatecard border border-graylight text-white text-xs font-medium rounded px-3 py-2 hover:border-accent transition flex justify-between items-center gap-2 w-44">
                     <span id="label-egr" class="truncate">Egresos (Todos)</span> <i class="fa-solid fa-chevron-down text-[10px] text-textmuted"></i>
@@ -120,7 +119,6 @@
 
     <div id="mainDashboardView">
         
-        <!-- Tarjetas de KPIs Armónicas -->
         <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
             <div class="bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
                 <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Ingresos Totales</p>
@@ -148,56 +146,104 @@
             </div>
         </div>
 
-        <!-- Fila 1 de Gráficos -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm lg:col-span-2">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Rentabilidad General por Sede</h3>
+        <!-- Fila 1 de Gráficos: Flex Dinámico -->
+        <div class="flex flex-col lg:flex-row gap-6 mb-6" id="row-1">
+            <div id="card-city" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-[2] w-full lg:w-auto min-w-0">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Rentabilidad General por Sede</h3>
+                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('cityChart', this)" title="Mostrar Valores">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <div class="relative h-64 w-full"><canvas id="cityChart"></canvas></div>
             </div>
             
-            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Composición de Ingresos</h3>
+            <div id="card-rev" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-[1] w-full lg:w-auto min-w-0">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Composición de Ingresos</h3>
+                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('revenueChart', this)" title="Mostrar Valores">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <div class="relative h-64 w-full flex justify-center"><canvas id="revenueChart"></canvas></div>
             </div>
         </div>
 
-        <!-- Fila 2 de Gráficos -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm lg:col-span-2">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Tendencia Evolutiva (Ingresos, Egresos y Utilidad)</h3>
-                <div class="relative h-64 w-full"><canvas id="trendChart"></canvas></div>
+        <!-- Fila 2 de Gráficos: Flex Dinámico (Destino de Ingresos y Tendencia) -->
+        <div class="flex flex-col lg:flex-row gap-6 mb-6" id="row-2">
+            <div id="card-trend" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-[2] w-full lg:w-auto min-w-0">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Tendencia Evolutiva</h3>
+                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('trendChart', this)" title="Mostrar Valores">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <!-- Incrementado a h-80 para balancear con el gráfico de Destinos -->
+                <div class="relative h-80 w-full"><canvas id="trendChart"></canvas></div>
             </div>
 
-            <!-- Nuevo: Destino de Ingresos (Barras Horizontales) -->
-            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Destino de Ingresos (Egresos)</h3>
-                <div class="relative h-64 w-full flex justify-center"><canvas id="expenseDestChart"></canvas></div>
+            <div id="card-dest" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-[1] w-full lg:w-auto min-w-0">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Destino de Ingresos</h3>
+                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('expenseDestChart', this)" title="Mostrar Valores">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <!-- Incrementado a h-80 para mostrar bien las etiquetas del Eje Y -->
+                <div class="relative h-80 w-full flex justify-center"><canvas id="expenseDestChart"></canvas></div>
             </div>
         </div>
 
-        <!-- Fila 3 de Gráficos Operativos y Evolución -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Ocupación vs AVG Rate</h3>
+        <!-- Fila 3 de Gráficos Operativos: Flex Dinámico -->
+        <div class="flex flex-col lg:flex-row gap-6 mb-6" id="row-3">
+            <div id="card-adr" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-1 w-full lg:w-auto min-w-0">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Ocupación vs AVG Rate</h3>
+                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('adrOccChart', this)" title="Mostrar Valores">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <div class="relative h-64 w-full"><canvas id="adrOccChart"></canvas></div>
             </div>
             
-            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Evolución Mensual de Ingresos por Tipo</h3>
+            <div id="card-inc" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-1 w-full lg:w-auto min-w-0">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Evolución Ingresos por Tipo</h3>
+                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('incomeEvolutionChart', this)" title="Mostrar Valores">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <div class="relative h-64 w-full"><canvas id="incomeEvolutionChart"></canvas></div>
             </div>
         </div>
 
-        <!-- Fila 4: Análisis de Egresos por Sede (Ampliado y Movido abajo) -->
-        <div class="grid grid-cols-1 gap-6 mb-6">
-            <div class="bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm w-full">
-                <h3 class="text-sm font-semibold text-white mb-4 tracking-wide">Análisis de Egresos por Sede</h3>
-                <!-- Incrementamos la altura (h-96) para que puedas detallar mejor la comparación de los meses -->
+        <!-- Fila 4: Análisis de Egresos: Flex Dinámico -->
+        <div class="flex flex-col lg:flex-row gap-6 mb-6" id="row-4">
+            <div id="card-exp" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-1 w-full min-w-0">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Análisis de Egresos por Sede</h3>
+                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('expensesChart', this)" title="Mostrar Valores">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <div class="relative h-96 w-full flex justify-center"><canvas id="expensesChart"></canvas></div>
             </div>
         </div>
 
-        <div class="flex justify-end mt-4">
+        <div class="flex justify-between items-center mt-4 border-t border-graylight/30 pt-4">
+            
+            <div class="relative" id="container-vis">
+                <button id="btn-vis" class="text-graylight hover:text-textmuted text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-2 cursor-pointer" title="Configurar Gráficos">
+                    <i class="fa-solid fa-layer-group"></i> Ocultar/Mostrar Gráficos
+                </button>
+                <div id="dropdown-vis" class="absolute bottom-full left-0 mb-2 w-56 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content z-50">
+                    <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
+                        <span class="text-[10px] font-bold text-textmuted uppercase">Gráficos Visibles</span>
+                    </div>
+                    <div id="list-vis" class="p-2 max-h-56 overflow-y-auto flex flex-col gap-1.5"></div>
+                </div>
+            </div>
+
             <button id="btnSyncGoogleSheets" class="text-graylight hover:text-textmuted text-[10px] uppercase font-bold tracking-wider transition cursor-pointer">
                 <i class="fa-solid fa-rotate"></i> Sincronizar Base de Datos
             </button>
@@ -209,7 +255,15 @@
         const formatPercent = (val) => (isNaN(val) ? 0 : val).toFixed(1) + '%';
         const monthsNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        // DICCIONARIO EXACTO DE COLUMNAS 
+        // Formateador inteligente para los ejes de las gráficas (K, M, B)
+        const formatAxisNum = (value) => {
+            if (value === 0 || value == null) return '$0';
+            if (value >= 1000000000) return '$' + (value / 1000000000).toFixed(1) + 'B';
+            if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
+            if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'k';
+            return '$' + Math.round(value); // CORRECCIÓN: Redondea para eliminar decimales infinitos
+        };
+
         const ingresosConfig = [
             { id: 'Ing_Habitaciones', label: 'Habitaciones' }, { id: 'Ing_AyB', label: 'AyB' },
             { id: 'Ing_Diamond', label: 'Diamond' }, { id: 'Ing_Consignacion', label: 'Consignación' },
@@ -231,21 +285,26 @@
             { id: 'Gasto_HCL', label: 'HCL' }
         ];
 
-        // Paleta Luxury generativa para gráficos de muchas categorías
         const luxuryColors = ['#bda269', '#94a3b8', '#52555c', '#d6be89', '#cbd5e1', '#64748b', '#e2e8f0', '#475569', '#f8fafc', '#334155', '#a38752', '#846a3d', '#e5d3a6', '#1e293b'];
         const getColor = (i) => luxuryColors[i % luxuryColors.length];
 
         let dashboardData = []; 
         let cityChart, trendChart, revenueChart, expensesChart, adrOccChart, incomeEvolutionChart, expenseDestChart;
         
-        // Estado de los Segmentadores
-        let selectedSedes = [];
-        let selectedMeses = [];
-        let selectedIngresos = [];
-        let selectedEgresos = [];
+        let selectedSedes = []; let selectedMeses = []; let selectedIngresos = []; let selectedEgresos = [];
+
+        const visibilityConfig = [
+            { id: 'card-city', label: 'Rentabilidad Gral' },
+            { id: 'card-rev', label: 'Comp. Ingresos' },
+            { id: 'card-trend', label: 'Tendencia Evolutiva' },
+            { id: 'card-dest', label: 'Destino de Ingresos' },
+            { id: 'card-adr', label: 'Ocupación vs ADR' },
+            { id: 'card-inc', label: 'Evolución Mensual' },
+            { id: 'card-exp', label: 'Egresos por Sede' }
+        ];
 
         function setupDropdowns() {
-            const setups = ['sede', 'mes', 'ing', 'egr'];
+            const setups = ['sede', 'mes', 'ing', 'egr', 'vis'];
             setups.forEach(type => {
                 const btn = document.getElementById(`btn-${type}`);
                 const dd = document.getElementById(`dropdown-${type}`);
@@ -253,7 +312,6 @@
                 
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    // Cerrar otros
                     setups.forEach(t => { if(t !== type) document.getElementById(`dropdown-${t}`).classList.remove('show'); });
                     dd.classList.toggle('show');
                 });
@@ -273,7 +331,6 @@
             selectedIngresos = ingresosConfig.map(i => i.id);
             selectedEgresos = egresosConfig.map(e => e.id);
 
-            // Poblar HTML
             const renderList = (id, items, type) => {
                 const list = document.getElementById(`list-${id}`);
                 list.innerHTML = items.map(item => `
@@ -289,12 +346,25 @@
             renderList('ing', ingresosConfig.map(i => ({val: i.id, label: i.label})));
             renderList('egr', egresosConfig.map(e => ({val: e.id, label: e.label})));
 
+            const listVis = document.getElementById('list-vis');
+            listVis.innerHTML = visibilityConfig.map(item => `
+                <label class="flex items-center gap-2 p-1.5 hover:bg-slatebg rounded cursor-pointer transition">
+                    <input type="checkbox" value="${item.id}" class="cb-gold" checked onchange="toggleCardVisibility('${item.id}', this)"> 
+                    <span class="text-xs text-textmain">${item.label}</span>
+                </label>
+            `).join('');
+
             updateFilterLabels();
+        }
+
+        window.toggleCardVisibility = function(cardId, checkbox) {
+            const card = document.getElementById(cardId);
+            // Al hacer display block/none en un elemento flex, los demás se auto-ajustan
+            card.style.display = checkbox.checked ? 'block' : 'none';
         }
 
         window.toggleAll = function(type, forceCheck = false) {
             const checkboxes = document.querySelectorAll(`.cb-${type}`);
-            // Check current state to toggle
             const allChecked = Array.from(checkboxes).every(cb => cb.checked);
             const newState = forceCheck ? true : !allChecked;
             checkboxes.forEach(cb => cb.checked = newState);
@@ -342,7 +412,6 @@
                     if (respuesta.ok) filas = await respuesta.json();
                     else throw new Error("Netlify Error");
                 } else {
-                    // Generador de datos MOCK para la Preview (Modificado para usar enteros)
                     const sedes = ["Caracas", "Margarita", "Valencia", "Barquisimeto", "Paraguana", "San Cristobal"];
                     filas = sedes.flatMap(sede => Array.from({length: 6}, (_, i) => {
                         let row = { Sede: sede, Mes: i+1, Ocupacion_Pct: Math.floor(40 + Math.random()*50), Tarifa_Promedio: Math.floor(80 + Math.random()*100) };
@@ -356,7 +425,6 @@
                 filas.forEach(fila => {
                     const getVal = (k) => {
                         const foundKey = Object.keys(fila).find(fk => fk.toLowerCase() === k.toLowerCase());
-                        // ¡ÚNICA LÍNEA MODIFICADA PARA ARREGLAR LOS DECIMALES Y PUNTOS DE MILES!
                         return foundKey ? parseFloat((fila[foundKey]||"0").toString().replace(/\$/g, '').replace(/\./g, '').replace(',', '.')) || 0 : 0;
                     };
 
@@ -390,16 +458,74 @@
             }
         }
 
+        window.toggleChartLabels = function(chartId, btnElement) {
+            const icon = btnElement.querySelector('i');
+            const isShowing = icon.classList.contains('fa-eye-slash');
+
+            const chartsMap = {
+                'cityChart': cityChart, 'revenueChart': revenueChart, 'trendChart': trendChart,
+                'expenseDestChart': expenseDestChart, 'expensesChart': expensesChart,
+                'adrOccChart': adrOccChart, 'incomeEvolutionChart': incomeEvolutionChart
+            };
+
+            const chartInstance = chartsMap[chartId];
+
+            if(chartInstance) {
+                if (isShowing) {
+                    chartInstance.options.plugins.datalabels.display = false;
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    btnElement.classList.remove('text-accent');
+                } else {
+                    // CORRECCIÓN: Fuerza a "true" el gráfico horizontal para evitar que se oculten números largos en el borde
+                    chartInstance.options.plugins.datalabels.display = (chartId === 'expenseDestChart') ? true : 'auto';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    btnElement.classList.add('text-accent');
+                }
+                chartInstance.update();
+            }
+        }
+
         function initCharts() {
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = "'Inter', sans-serif";
             const gridConfig = { color: 'rgba(255,255,255,0.03)' };
 
+            // Registrando DataLabels GLOBALMENTE pero asegurando Alto Contraste
+            Chart.register(ChartDataLabels);
+            Chart.defaults.plugins.datalabels = {
+                display: false,
+                color: '#ffffff', // Letra siempre blanca
+                textStrokeColor: '#1e1f22', // Delineado oscuro (color de fondo) para crear contraste
+                textStrokeWidth: 4, // Grosor del delineado
+                textShadowColor: 'rgba(0,0,0,0.6)', // Sombra adicional por si acaso
+                textShadowBlur: 4,
+                font: { size: 10, weight: 'bold' },
+                formatter: (value, context) => {
+                    if(value === 0 || value == null) return '';
+                    if(context.dataset.label === 'Ocupación (%)' || context.dataset.label === 'Margen (%)' || context.dataset.yAxisID === 'y1') return Number(value).toFixed(1) + '%';
+                    return formatAxisNum(value);
+                }
+            };
+
             const ctxCity = document.getElementById('cityChart').getContext('2d');
-            cityChart = new Chart(ctxCity, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } } });
+            cityChart = new Chart(ctxCity, { 
+                type: 'bar', 
+                data: { labels: [], datasets: [] }, 
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    scales: { 
+                        y: { type: 'linear', position: 'left', grid: gridConfig, ticks: { callback: formatAxisNum } }, 
+                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } },
+                        x: { grid: { display: false } } 
+                    }, 
+                    plugins: { legend: { position: 'bottom' } } 
+                } 
+            });
 
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
-            trendChart = new Chart(ctxTrend, { type: 'line', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } } });
+            trendChart = new Chart(ctxTrend, { type: 'line', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { grid: gridConfig, ticks: { callback: formatAxisNum } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } } });
 
             const ctxRev = document.getElementById('revenueChart').getContext('2d');
             revenueChart = new Chart(ctxRev, { type: 'doughnut', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } } });
@@ -409,22 +535,41 @@
                 type: 'bar', 
                 data: { labels: [], datasets: [] }, 
                 options: { 
-                    indexAxis: 'y', // Lo convierte en barras horizontales
+                    indexAxis: 'y', 
                     responsive: true, 
                     maintainAspectRatio: false, 
+                    layout: { padding: { right: 40 } }, 
                     scales: { 
-                        x: { grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }, 
-                        y: { grid: { display: false } } 
+                        x: { 
+                            grid: gridConfig, 
+                            ticks: { callback: formatAxisNum },
+                            grace: '15%' // CORRECCIÓN: Esto agrega espacio extra al eje X para que los números nunca choquen con el borde
+                        }, 
+                        y: { 
+                            grid: { display: false },
+                            ticks: { autoSkip: false, font: { size: 10 } } 
+                        } 
                     }, 
                     plugins: { 
                         legend: { display: false },
+                        datalabels: { 
+                            anchor: 'end',
+                            align: 'right',
+                            offset: 6,
+                            clip: false, // CORRECCIÓN: Garantiza que el número nunca se esconda
+                            color: '#94a3b8', // Color idéntico al del texto de la barra
+                            textStrokeWidth: 0, // Sin contornos negros
+                            textShadowBlur: 0, 
+                            font: { size: 10, weight: 'normal' },
+                            formatter: (value) => formatAxisNum(value) // Usamos la función de miles/millones para que sea idéntico
+                        },
                         tooltip: {
                             callbacks: {
                                 label: (context) => {
                                     const val = context.raw;
                                     const total = context.chart._customTotal || 1;
                                     const pct = ((val / total) * 100).toFixed(1) + '%';
-                                    return `${formatCurrency(val)} (${pct})`; // Muestra Monto + Porcentaje
+                                    return `${formatCurrency(val)} (${pct})`; 
                                 }
                             }
                         }
@@ -437,12 +582,8 @@
                 type: 'bar', 
                 data: { labels: [], datasets: [] }, 
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        x: { stacked: true, grid: { display: false } }, 
-                        y: { stacked: true, grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } } 
-                    }, 
+                    responsive: true, maintainAspectRatio: false, 
+                    scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: gridConfig, ticks: { callback: formatAxisNum } } }, 
                     plugins: { legend: { position: 'right', display: false } } 
                 } 
             });
@@ -451,7 +592,7 @@
             adrOccChart = new Chart(ctxAdrOcc, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', position: 'left', grid: gridConfig, ticks: { callback: v => '$' + v } }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } } } });
 
             const ctxIncEv = document.getElementById('incomeEvolutionChart').getContext('2d');
-            incomeEvolutionChart = new Chart(ctxIncEv, { type: 'line', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { grid: gridConfig, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } } });
+            incomeEvolutionChart = new Chart(ctxIncEv, { type: 'line', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { grid: gridConfig, ticks: { callback: formatAxisNum } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } } });
         }
 
         function updateDashboard() {
@@ -462,7 +603,6 @@
             let totalRev = 0, totalCost = 0;
             let sumOcupacion = 0, sumTarifa = 0, countRecords = 0;
             
-            // Agrupadores Geográficos y Temporales
             let cityGrouping = {};
             let adrTrend = {};
             let monthlyTrend = {}; 
@@ -477,7 +617,6 @@
             filteredData.forEach(d => {
                 if(!cityGrouping[d.cityName]) cityGrouping[d.cityName] = { rev: 0, cost: 0 };
                 
-                // Calcular ingresos de esta fila según segmentador
                 let rowRev = 0;
                 selectedIngresos.forEach(ingId => {
                     rowRev += d.incomes[ingId];
@@ -485,35 +624,24 @@
                     monthlyTrend[d.month].incDetails[ingId] += d.incomes[ingId];
                 });
 
-                // Calcular egresos de esta fila según segmentador
                 let rowCost = 0;
-                selectedEgresos.forEach(egrId => {
-                    rowCost += d.expenses[egrId];
-                });
+                selectedEgresos.forEach(egrId => { rowCost += d.expenses[egrId]; });
 
-                totalRev += rowRev;
-                totalCost += rowCost;
+                totalRev += rowRev; totalCost += rowCost;
                 
-                sumOcupacion += d.ocupacion;
-                sumTarifa += d.tarifa;
-                countRecords++;
+                sumOcupacion += d.ocupacion; sumTarifa += d.tarifa; countRecords++;
 
-                cityGrouping[d.cityName].rev += rowRev;
-                cityGrouping[d.cityName].cost += rowCost;
+                cityGrouping[d.cityName].rev += rowRev; cityGrouping[d.cityName].cost += rowCost;
 
-                adrTrend[d.month].ocup += d.ocupacion;
-                adrTrend[d.month].adr += d.tarifa;
-                adrTrend[d.month].count++;
+                adrTrend[d.month].ocup += d.ocupacion; adrTrend[d.month].adr += d.tarifa; adrTrend[d.month].count++;
 
-                monthlyTrend[d.month].rev += rowRev;
-                monthlyTrend[d.month].cost += rowCost;
+                monthlyTrend[d.month].rev += rowRev; monthlyTrend[d.month].cost += rowCost;
                 monthlyTrend[d.month].ebitda += (rowRev - rowCost);
             });
 
             const totalEbitda = totalRev - totalCost;
             const totalMargin = totalRev > 0 ? (totalEbitda / totalRev) * 100 : 0;
 
-            // Update KPIs
             document.getElementById('kpi-revenue').textContent = formatCurrency(totalRev);
             document.getElementById('kpi-costs').textContent = formatCurrency(totalCost);
             document.getElementById('kpi-ebitda').textContent = formatCurrency(totalEbitda);
@@ -522,27 +650,22 @@
             document.getElementById('kpi-occ').textContent = formatPercent(countRecords > 0 ? (sumOcupacion / countRecords) : 0);
             document.getElementById('kpi-adr').textContent = formatCurrency(countRecords > 0 ? (sumTarifa / countRecords) : 0);
 
-            // Chart 1: Rentabilidad por Sede
             const labelsCity = Object.keys(cityGrouping);
             cityChart.data = {
                 labels: labelsCity,
                 datasets: [
-                    { label: 'Ingresos', data: labelsCity.map(k => cityGrouping[k].rev), backgroundColor: '#bda269', borderRadius: 2 },
-                    { label: 'Utilidad', data: labelsCity.map(k => cityGrouping[k].rev - cityGrouping[k].cost), backgroundColor: '#52555c', borderRadius: 2 }
+                    { label: 'Ingresos', data: labelsCity.map(k => cityGrouping[k].rev), backgroundColor: '#bda269', borderRadius: 2, order: 2 },
+                    { label: 'Egresos', data: labelsCity.map(k => cityGrouping[k].cost), backgroundColor: '#94a3b8', borderRadius: 2, order: 2 },
+                    { label: 'Margen (%)', data: labelsCity.map(k => cityGrouping[k].rev > 0 ? ((cityGrouping[k].rev - cityGrouping[k].cost)/cityGrouping[k].rev)*100 : 0), type: 'line', borderColor: '#f8fafc', backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.4, borderWidth: 2, order: 1 }
                 ]
             };
             cityChart.update();
 
-            // Chart 2: Composición Ingresos
             const revLabels = selectedIngresos.map(id => ingresosConfig.find(i => i.id === id).label);
             const revData = selectedIngresos.map(id => sumIncByType[id]);
-            revenueChart.data = { 
-                labels: revLabels, 
-                datasets: [{ data: revData, backgroundColor: luxuryColors, borderWidth: 0 }] 
-            };
+            revenueChart.data = { labels: revLabels, datasets: [{ data: revData, backgroundColor: luxuryColors, borderWidth: 0 }] };
             revenueChart.update();
 
-            // Chart 3: Tendencia Evolutiva (Tri-Línea)
             const activeMonths = Object.keys(monthlyTrend).filter(m => selectedMeses.includes(parseInt(m))).sort((a,b)=>a-b);
             const mLabels = activeMonths.map(m => monthsNames[m-1]);
             trendChart.data = {
@@ -561,69 +684,47 @@
             selectedEgresos.forEach((egrId, index) => {
                 const config = egresosConfig.find(e => e.id === egrId);
                 let totalForThisExpense = 0;
-                
-                filteredData.forEach(d => {
-                    totalForThisExpense += (d.expenses[egrId] || 0);
-                });
-                
+                filteredData.forEach(d => { totalForThisExpense += (d.expenses[egrId] || 0); });
                 if (totalForThisExpense > 0) {
-                    expenseDestData.push({
-                        label: config.label,
-                        amount: totalForThisExpense,
-                        color: getColor(index)
-                    });
+                    expenseDestData.push({ label: config.label, amount: totalForThisExpense, color: getColor(index) });
                     grandTotalExpenses += totalForThisExpense;
                 }
             });
 
-            // Ordenar de mayor a menor gasto
             expenseDestData.sort((a, b) => b.amount - a.amount);
-
             expenseDestChart._customTotal = grandTotalExpenses || 1; 
-            expenseDestChart.data = {
-                labels: expenseDestData.map(d => d.label),
-                datasets: [{
-                    data: expenseDestData.map(d => d.amount),
-                    backgroundColor: expenseDestData.map(d => d.color),
-                    borderRadius: 2
-                }]
+            expenseDestChart.data = { 
+                labels: expenseDestData.map(d => d.label), 
+                datasets: [{ 
+                    data: expenseDestData.map(d => d.amount), 
+                    backgroundColor: expenseDestData.map(d => d.color), 
+                    borderRadius: 2,
+                    maxBarThickness: 40 // CORRECCIÓN: Cuando se filtren barras y queden pocas, no se volverán gigantescas, aprovechan el espacio de forma equilibrada.
+                }] 
             };
             expenseDestChart.update();
 
-            // Chart 4: MODIFICACIÓN QUIRÚRGICA - Barras Apiladas por Mes Lado a Lado
             let dsExpenses = [];
             const activeMonthsSorted = [...selectedMeses].sort((a,b) => a - b);
             
             activeMonthsSorted.forEach(monthVal => {
                 const monthName = monthsNames[monthVal - 1];
-                
                 selectedEgresos.forEach((egrId, index) => {
                     const config = egresosConfig.find(e => e.id === egrId);
-                    
-                    // Extraer los datos específicos de ese mes para todas las ciudades seleccionadas
                     const dataForDataset = labelsCity.map(city => {
                         const record = dashboardData.find(d => d.cityName === city && d.month === monthVal);
                         return record && record.expenses[egrId] ? record.expenses[egrId] : 0;
                     });
-                    
-                    // Solo dibujar si este mes y rubro tienen algún valor (limpia la leyenda)
                     if(dataForDataset.some(val => val > 0)) {
-                        dsExpenses.push({
-                            label: `${config.label} (${monthName})`,
-                            data: dataForDataset,
-                            backgroundColor: getColor(index), // Mismo color para el mismo gasto siempre
-                            stack: `StackMes${monthVal}` // ESTA ES LA MAGIA: Apila los datos del mismo mes y pone los meses uno al lado del otro
-                        });
+                        dsExpenses.push({ label: `${config.label} (${monthName})`, data: dataForDataset, backgroundColor: getColor(index), stack: `StackMes${monthVal}` });
                     }
                 });
             });
 
             expensesChart.data = { labels: labelsCity, datasets: dsExpenses };
-            // Mostrar leyenda si la cantidad de datasets (barras) no ensucia la vista
             expensesChart.options.plugins.legend.display = dsExpenses.length <= 12;
             expensesChart.update();
 
-            // Chart 5: ADR vs Occ
             adrOccChart.data = {
                 labels: mLabels,
                 datasets: [
@@ -633,16 +734,9 @@
             };
             adrOccChart.update();
 
-            // Chart 6: Evolución Mensual de Ingresos por Tipo
             const dsIncomes = selectedIngresos.map((ingId, index) => {
                 const config = ingresosConfig.find(i => i.id === ingId);
-                return {
-                    label: config.label,
-                    data: activeMonths.map(m => monthlyTrend[m].incDetails[ingId]),
-                    borderColor: getColor(index),
-                    tension: 0.3,
-                    fill: false
-                };
+                return { label: config.label, data: activeMonths.map(m => monthlyTrend[m].incDetails[ingId]), borderColor: getColor(index), tension: 0.3, fill: false };
             });
             incomeEvolutionChart.data = { labels: mLabels, datasets: dsIncomes };
             incomeEvolutionChart.update();
