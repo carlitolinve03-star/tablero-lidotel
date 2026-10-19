@@ -169,20 +169,9 @@
             </div>
         </div>
 
-        <!-- Fila 2 de Gráficos: Flex Dinámico (Destino de Ingresos y Tendencia) -->
+        <!-- Fila 2 de Gráficos: Flex Dinámico -->
         <div class="flex flex-col lg:flex-row gap-6 mb-6" id="row-2">
-            <div id="card-trend" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-[2] w-full lg:w-auto min-w-0">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-sm font-semibold text-white tracking-wide">Tendencia Evolutiva</h3>
-                    <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('trendChart', this)" title="Mostrar Valores">
-                        <i class="fa-solid fa-eye"></i>
-                    </button>
-                </div>
-                <!-- Incrementado a h-80 para balancear con el gráfico de Destinos -->
-                <div class="relative h-80 w-full"><canvas id="trendChart"></canvas></div>
-            </div>
-
-            <div id="card-dest" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-[1] w-full lg:w-auto min-w-0">
+            <div id="card-dest" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-1 w-full min-w-0">
                 <div class="flex justify-between items-start mb-4">
                     <h3 class="text-sm font-semibold text-white tracking-wide">Destino de Ingresos</h3>
                     <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('expenseDestChart', this)" title="Mostrar Valores">
@@ -261,7 +250,7 @@
             if (value >= 1000000000) return '$' + (value / 1000000000).toFixed(1) + 'B';
             if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
             if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'k';
-            return '$' + Math.round(value); // CORRECCIÓN: Redondea para eliminar decimales infinitos
+            return '$' + Math.round(value); // Redondeo para que no salgan decimales infinitos
         };
 
         const ingresosConfig = [
@@ -289,14 +278,13 @@
         const getColor = (i) => luxuryColors[i % luxuryColors.length];
 
         let dashboardData = []; 
-        let cityChart, trendChart, revenueChart, expensesChart, adrOccChart, incomeEvolutionChart, expenseDestChart;
+        let cityChart, revenueChart, expensesChart, adrOccChart, incomeEvolutionChart, expenseDestChart;
         
         let selectedSedes = []; let selectedMeses = []; let selectedIngresos = []; let selectedEgresos = [];
 
         const visibilityConfig = [
             { id: 'card-city', label: 'Rentabilidad Gral' },
             { id: 'card-rev', label: 'Comp. Ingresos' },
-            { id: 'card-trend', label: 'Tendencia Evolutiva' },
             { id: 'card-dest', label: 'Destino de Ingresos' },
             { id: 'card-adr', label: 'Ocupación vs ADR' },
             { id: 'card-inc', label: 'Evolución Mensual' },
@@ -463,7 +451,7 @@
             const isShowing = icon.classList.contains('fa-eye-slash');
 
             const chartsMap = {
-                'cityChart': cityChart, 'revenueChart': revenueChart, 'trendChart': trendChart,
+                'cityChart': cityChart, 'revenueChart': revenueChart,
                 'expenseDestChart': expenseDestChart, 'expensesChart': expensesChart,
                 'adrOccChart': adrOccChart, 'incomeEvolutionChart': incomeEvolutionChart
             };
@@ -477,8 +465,8 @@
                     icon.classList.add('fa-eye');
                     btnElement.classList.remove('text-accent');
                 } else {
-                    // CORRECCIÓN: Fuerza a "true" el gráfico horizontal para evitar que se oculten números largos en el borde
-                    chartInstance.options.plugins.datalabels.display = (chartId === 'expenseDestChart') ? true : 'auto';
+                    // Usamos display 'auto' para mantener un diseño limpio, o 'true' si es necesario
+                    chartInstance.options.plugins.datalabels.display = (chartId === 'expenseDestChart' || chartId === 'revenueChart' || chartId === 'adrOccChart') ? true : 'auto';
                     icon.classList.remove('fa-eye');
                     icon.classList.add('fa-eye-slash');
                     btnElement.classList.add('text-accent');
@@ -524,11 +512,21 @@
                 } 
             });
 
-            const ctxTrend = document.getElementById('trendChart').getContext('2d');
-            trendChart = new Chart(ctxTrend, { type: 'line', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { grid: gridConfig, ticks: { callback: formatAxisNum } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } } });
-
             const ctxRev = document.getElementById('revenueChart').getContext('2d');
-            revenueChart = new Chart(ctxRev, { type: 'doughnut', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } } });
+            revenueChart = new Chart(ctxRev, { 
+                type: 'doughnut', 
+                data: { labels: [], datasets: [] }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '70%',
+                    layout: { padding: 20 }, // Margen para que los números quepan por fuera
+                    plugins: { 
+                        legend: { position: 'right' },
+                        datalabels: { anchor: 'end', align: 'end', offset: 0 } // Ubica los números por fuera
+                    } 
+                } 
+            });
 
             const ctxExpDest = document.getElementById('expenseDestChart').getContext('2d');
             expenseDestChart = new Chart(ctxExpDest, { 
@@ -543,7 +541,7 @@
                         x: { 
                             grid: gridConfig, 
                             ticks: { callback: formatAxisNum },
-                            grace: '15%' // CORRECCIÓN: Esto agrega espacio extra al eje X para que los números nunca choquen con el borde
+                            grace: '15%' 
                         }, 
                         y: { 
                             grid: { display: false },
@@ -556,12 +554,12 @@
                             anchor: 'end',
                             align: 'right',
                             offset: 6,
-                            clip: false, // CORRECCIÓN: Garantiza que el número nunca se esconda
-                            color: '#94a3b8', // Color idéntico al del texto de la barra
-                            textStrokeWidth: 0, // Sin contornos negros
+                            clip: false, 
+                            color: '#94a3b8', 
+                            textStrokeWidth: 0, 
                             textShadowBlur: 0, 
                             font: { size: 10, weight: 'normal' },
-                            formatter: (value) => formatAxisNum(value) // Usamos la función de miles/millones para que sea idéntico
+                            formatter: (value) => formatAxisNum(value)
                         },
                         tooltip: {
                             callbacks: {
@@ -589,7 +587,19 @@
             });
 
             const ctxAdrOcc = document.getElementById('adrOccChart').getContext('2d');
-            adrOccChart = new Chart(ctxAdrOcc, { type: 'bar', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', position: 'left', grid: gridConfig, ticks: { callback: v => '$' + v } }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } } } });
+            adrOccChart = new Chart(ctxAdrOcc, { 
+                type: 'bar', 
+                data: { labels: [], datasets: [] }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { type: 'linear', position: 'left', grid: gridConfig, ticks: { callback: v => '$' + v } }, 
+                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } }, 
+                        x: { grid: { display: false } } 
+                    } 
+                } 
+            });
 
             const ctxIncEv = document.getElementById('incomeEvolutionChart').getContext('2d');
             incomeEvolutionChart = new Chart(ctxIncEv, { type: 'line', data: { labels: [], datasets: [] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { grid: gridConfig, ticks: { callback: formatAxisNum } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } } });
@@ -666,18 +676,6 @@
             revenueChart.data = { labels: revLabels, datasets: [{ data: revData, backgroundColor: luxuryColors, borderWidth: 0 }] };
             revenueChart.update();
 
-            const activeMonths = Object.keys(monthlyTrend).filter(m => selectedMeses.includes(parseInt(m))).sort((a,b)=>a-b);
-            const mLabels = activeMonths.map(m => monthsNames[m-1]);
-            trendChart.data = {
-                labels: mLabels,
-                datasets: [
-                    { label: 'Ingresos', data: activeMonths.map(m => monthlyTrend[m].rev), borderColor: '#bda269', tension: 0.3 },
-                    { label: 'Egresos', data: activeMonths.map(m => monthlyTrend[m].cost), borderColor: '#94a3b8', borderDash: [5,5], tension: 0.3 },
-                    { label: 'Utilidad Neta', data: activeMonths.map(m => monthlyTrend[m].ebitda), borderColor: '#cbd5e1', backgroundColor: 'rgba(203, 213, 225, 0.1)', fill: true, tension: 0.3 }
-                ]
-            };
-            trendChart.update();
-
             let expenseDestData = [];
             let grandTotalExpenses = 0;
             
@@ -699,7 +697,7 @@
                     data: expenseDestData.map(d => d.amount), 
                     backgroundColor: expenseDestData.map(d => d.color), 
                     borderRadius: 2,
-                    maxBarThickness: 40 // CORRECCIÓN: Cuando se filtren barras y queden pocas, no se volverán gigantescas, aprovechan el espacio de forma equilibrada.
+                    maxBarThickness: 40 
                 }] 
             };
             expenseDestChart.update();
@@ -725,11 +723,15 @@
             expensesChart.options.plugins.legend.display = dsExpenses.length <= 12;
             expensesChart.update();
 
+            const activeMonths = Object.keys(monthlyTrend).filter(m => selectedMeses.includes(parseInt(m))).sort((a,b)=>a-b);
+            const mLabels = activeMonths.map(m => monthsNames[m-1]);
+
+            // Chart 5: ADR vs Occ con anclajes actualizados
             adrOccChart.data = {
                 labels: mLabels,
                 datasets: [
-                    { label: 'Ocupación (%)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].ocup/adrTrend[m].count) : 0), yAxisID: 'y1', type: 'line', borderColor: '#bda269', tension: 0.3 },
-                    { label: 'AVG Rate ($)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].adr/adrTrend[m].count) : 0), yAxisID: 'y', type: 'bar', backgroundColor: '#52555c', borderRadius: 2 }
+                    { label: 'Ocupación (%)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].ocup/adrTrend[m].count) : 0), yAxisID: 'y1', type: 'line', borderColor: '#bda269', tension: 0.3, datalabels: { align: 'top', anchor: 'end' } }, // Línea hacia arriba
+                    { label: 'AVG Rate ($)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].adr/adrTrend[m].count) : 0), yAxisID: 'y', type: 'bar', backgroundColor: '#52555c', borderRadius: 2, datalabels: { align: 'top', anchor: 'start' } } // Barras lo más abajo posible (en la base)
                 ]
             };
             adrOccChart.update();
