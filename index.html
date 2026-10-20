@@ -66,7 +66,10 @@
                 <div id="dropdown-sede" class="absolute top-full mt-1 w-48 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content">
                     <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
                         <span class="text-[10px] font-bold text-textmuted uppercase">Seleccionar</span>
-                        <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('sede', true)">Todas</button>
+                        <div class="flex gap-2">
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('sede', true)">Todos</button>
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('sede', false)">Ninguno</button>
+                        </div>
                     </div>
                     <div id="list-sede" class="p-2 max-h-48 overflow-y-auto flex flex-col gap-1.5"></div>
                 </div>
@@ -79,7 +82,10 @@
                 <div id="dropdown-mes" class="absolute top-full mt-1 w-40 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content">
                     <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
                         <span class="text-[10px] font-bold text-textmuted uppercase">Seleccionar</span>
-                        <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('mes', true)">Todos</button>
+                        <div class="flex gap-2">
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('mes', true)">Todos</button>
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('mes', false)">Ninguno</button>
+                        </div>
                     </div>
                     <div id="list-mes" class="p-2 max-h-48 overflow-y-auto flex flex-col gap-1.5"></div>
                 </div>
@@ -92,7 +98,10 @@
                 <div id="dropdown-ing" class="absolute top-full right-0 mt-1 w-56 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content">
                     <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
                         <span class="text-[10px] font-bold text-textmuted uppercase">Rubros de Ingreso</span>
-                        <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('ing', true)">Todos</button>
+                        <div class="flex gap-2">
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('ing', true)">Todos</button>
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('ing', false)">Ninguno</button>
+                        </div>
                     </div>
                     <div id="list-ing" class="p-2 max-h-56 overflow-y-auto flex flex-col gap-1.5"></div>
                 </div>
@@ -105,7 +114,10 @@
                 <div id="dropdown-egr" class="absolute top-full right-0 mt-1 w-56 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content">
                     <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
                         <span class="text-[10px] font-bold text-textmuted uppercase">Rubros de Egreso</span>
-                        <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('egr', true)">Todos</button>
+                        <div class="flex gap-2">
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('egr', true)">Todos</button>
+                            <button class="text-[10px] text-accent hover:text-white" onclick="toggleAll('egr', false)">Ninguno</button>
+                        </div>
                     </div>
                     <div id="list-egr" class="p-2 max-h-64 overflow-y-auto flex flex-col gap-1.5"></div>
                 </div>
@@ -210,7 +222,25 @@
         <div class="flex flex-col lg:flex-row gap-6 mb-6" id="row-4">
             <div id="card-exp" class="flex-auto-transition bg-slatecard rounded-xl border border-graylight/50 p-5 shadow-sm flex-1 w-full min-w-0">
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-sm font-semibold text-white tracking-wide">Análisis de Egresos por Sede</h3>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-sm font-semibold text-white tracking-wide">Análisis de Egresos por Sede</h3>
+                        <!-- Segmentador Local Inteligente -->
+                        <div class="relative" id="container-local-egr">
+                            <button id="btn-local-egr" class="bg-slatebg border border-graylight text-textmuted hover:text-white text-[10px] rounded px-2 py-1 transition flex items-center gap-1">
+                                <span id="label-local-egr">Top 5 Gastos</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                            </button>
+                            <div id="dropdown-local-egr" class="absolute top-full left-0 mt-1 w-56 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content z-50">
+                                <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
+                                    <span class="text-[10px] font-bold text-textmuted uppercase">Filtrar</span>
+                                    <div class="flex gap-2">
+                                        <button class="text-[10px] text-accent hover:text-white" onclick="toggleAllLocalEgr(true)">Todos</button>
+                                        <button class="text-[10px] text-accent hover:text-white" onclick="toggleAllLocalEgr(false)">Ninguno</button>
+                                    </div>
+                                </div>
+                                <div id="list-local-egr" class="p-2 max-h-48 overflow-y-auto flex flex-col gap-1.5"></div>
+                            </div>
+                        </div>
+                    </div>
                     <button class="text-graylight hover:text-accent transition text-xs" onclick="toggleChartLabels('expensesChart', this)" title="Mostrar Valores">
                         <i class="fa-solid fa-eye"></i>
                     </button>
@@ -281,6 +311,7 @@
         let cityChart, revenueChart, expensesChart, adrOccChart, incomeEvolutionChart, expenseDestChart;
         
         let selectedSedes = []; let selectedMeses = []; let selectedIngresos = []; let selectedEgresos = [];
+        window.selectedLocalEgresos = []; // Almacena el Top 5 local del gráfico
 
         const visibilityConfig = [
             { id: 'card-city', label: 'Rentabilidad Gral' },
@@ -292,7 +323,7 @@
         ];
 
         function setupDropdowns() {
-            const setups = ['sede', 'mes', 'ing', 'egr', 'vis'];
+            const setups = ['sede', 'mes', 'ing', 'egr', 'vis', 'local-egr'];
             setups.forEach(type => {
                 const btn = document.getElementById(`btn-${type}`);
                 const dd = document.getElementById(`dropdown-${type}`);
@@ -334,6 +365,24 @@
             renderList('ing', ingresosConfig.map(i => ({val: i.id, label: i.label})));
             renderList('egr', egresosConfig.map(e => ({val: e.id, label: e.label})));
 
+            // Calcular Top 5 general para el gráfico inteligente de Egresos por Sede
+            let expTotals = {};
+            egresosConfig.forEach(e => expTotals[e.id] = 0);
+            dashboardData.forEach(d => {
+                egresosConfig.forEach(e => expTotals[e.id] += (d.expenses[e.id] || 0));
+            });
+            let sortedExp = egresosConfig.slice().sort((a, b) => expTotals[b.id] - expTotals[a.id]);
+            window.selectedLocalEgresos = sortedExp.slice(0, 5).map(e => e.id); // Toma los 5 mayores por defecto
+
+            const listLocalEgr = document.getElementById('list-local-egr');
+            listLocalEgr.innerHTML = sortedExp.map(item => `
+                <label class="flex items-center gap-2 p-1.5 hover:bg-slatebg rounded cursor-pointer transition">
+                    <input type="checkbox" value="${item.id}" class="cb-gold cb-local-egr" ${window.selectedLocalEgresos.includes(item.id) ? 'checked' : ''} onchange="handleLocalEgrChange()"> 
+                    <span class="text-xs text-textmain">${item.label}</span>
+                </label>
+            `).join('');
+            window.updateLocalEgrLabel();
+
             const listVis = document.getElementById('list-vis');
             listVis.innerHTML = visibilityConfig.map(item => `
                 <label class="flex items-center gap-2 p-1.5 hover:bg-slatebg rounded cursor-pointer transition">
@@ -347,15 +396,12 @@
 
         window.toggleCardVisibility = function(cardId, checkbox) {
             const card = document.getElementById(cardId);
-            // Al hacer display block/none en un elemento flex, los demás se auto-ajustan
             card.style.display = checkbox.checked ? 'block' : 'none';
         }
 
-        window.toggleAll = function(type, forceCheck = false) {
+        window.toggleAll = function(type, checkAll = true) {
             const checkboxes = document.querySelectorAll(`.cb-${type}`);
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            const newState = forceCheck ? true : !allChecked;
-            checkboxes.forEach(cb => cb.checked = newState);
+            checkboxes.forEach(cb => cb.checked = checkAll);
             handleFilterChange(type);
         }
 
@@ -374,6 +420,29 @@
             
             updateFilterLabels();
             updateDashboard();
+        }
+
+        window.handleLocalEgrChange = function() {
+            const checkboxes = document.querySelectorAll('.cb-local-egr');
+            window.selectedLocalEgresos = [];
+            checkboxes.forEach(cb => {
+                if(cb.checked) window.selectedLocalEgresos.push(cb.value);
+            });
+            window.updateLocalEgrLabel();
+            updateDashboard();
+        }
+
+        window.toggleAllLocalEgr = function(checkAll) {
+            const checkboxes = document.querySelectorAll('.cb-local-egr');
+            checkboxes.forEach(cb => cb.checked = checkAll);
+            window.handleLocalEgrChange();
+        }
+
+        window.updateLocalEgrLabel = function() {
+            const lbl = document.getElementById('label-local-egr');
+            if (window.selectedLocalEgresos.length === 0) lbl.innerText = 'Ninguno';
+            else if (window.selectedLocalEgresos.length === egresosConfig.length) lbl.innerText = 'Todos los Gastos';
+            else lbl.innerText = `Gastos (${window.selectedLocalEgresos.length})`;
         }
 
         function updateFilterLabels() {
@@ -465,7 +534,6 @@
                     icon.classList.add('fa-eye');
                     btnElement.classList.remove('text-accent');
                 } else {
-                    // Usamos display 'auto' para mantener un diseño limpio, o 'true' si es necesario
                     chartInstance.options.plugins.datalabels.display = (chartId === 'expenseDestChart' || chartId === 'revenueChart' || chartId === 'adrOccChart') ? true : 'auto';
                     icon.classList.remove('fa-eye');
                     icon.classList.add('fa-eye-slash');
@@ -480,14 +548,13 @@
             Chart.defaults.font.family = "'Inter', sans-serif";
             const gridConfig = { color: 'rgba(255,255,255,0.03)' };
 
-            // Registrando DataLabels GLOBALMENTE pero asegurando Alto Contraste
             Chart.register(ChartDataLabels);
             Chart.defaults.plugins.datalabels = {
                 display: false,
-                color: '#ffffff', // Letra siempre blanca
-                textStrokeColor: '#1e1f22', // Delineado oscuro (color de fondo) para crear contraste
-                textStrokeWidth: 4, // Grosor del delineado
-                textShadowColor: 'rgba(0,0,0,0.6)', // Sombra adicional por si acaso
+                color: '#ffffff',
+                textStrokeColor: '#1e1f22',
+                textStrokeWidth: 4,
+                textShadowColor: 'rgba(0,0,0,0.6)',
                 textShadowBlur: 4,
                 font: { size: 10, weight: 'bold' },
                 formatter: (value, context) => {
@@ -520,10 +587,10 @@
                     responsive: true, 
                     maintainAspectRatio: false, 
                     cutout: '70%',
-                    layout: { padding: 20 }, // Margen para que los números quepan por fuera
+                    layout: { padding: 20 },
                     plugins: { 
                         legend: { position: 'right' },
-                        datalabels: { anchor: 'end', align: 'end', offset: 0 } // Ubica los números por fuera
+                        datalabels: { anchor: 'end', align: 'end', offset: 0 }
                     } 
                 } 
             });
@@ -559,7 +626,10 @@
                             textStrokeWidth: 0, 
                             textShadowBlur: 0, 
                             font: { size: 10, weight: 'normal' },
-                            formatter: (value) => formatAxisNum(value)
+                            formatter: (value, context) => {
+                                const total = context.chart._customTotal || 1;
+                                return ((value / total) * 100).toFixed(1) + '%';
+                            }
                         },
                         tooltip: {
                             callbacks: {
@@ -582,7 +652,36 @@
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
                     scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: gridConfig, ticks: { callback: formatAxisNum } } }, 
-                    plugins: { legend: { position: 'right', display: false } } 
+                    plugins: { 
+                        legend: { position: 'right', display: true },
+                        datalabels: {
+                            formatter: (value, context) => {
+                                if (value === 0 || value == null) return '';
+                                let total = 0;
+                                context.chart.data.datasets.forEach(ds => {
+                                    total += ds.data[context.dataIndex] || 0;
+                                });
+                                if (total === 0) return '';
+                                const pct = (value / total) * 100;
+                                return pct >= 5 ? pct.toFixed(1) + '%' : '';
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const val = context.raw;
+                                    let total = 0;
+                                    context.chart.data.datasets.forEach(ds => {
+                                        total += ds.data[context.dataIndex] || 0;
+                                    });
+                                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
+                                    // Remove the (XX%) from the name just for the tooltip, to keep it clean
+                                    const cleanLabel = context.dataset.label.split(' (')[0];
+                                    return `${cleanLabel}: ${formatCurrency(val)} (${pct})`;
+                                }
+                            }
+                        }
+                    } 
                 } 
             });
 
@@ -702,36 +801,60 @@
             };
             expenseDestChart.update();
 
-            let dsExpenses = [];
-            const activeMonthsSorted = [...selectedMeses].sort((a,b) => a - b);
+            // Lógica ajustada para Egresos por Sede (Suma agrupada y porcentaje en la leyenda)
+            let dsExpensesTemp = [];
+            let grandTotalLocalExpenses = 0;
             
-            activeMonthsSorted.forEach(monthVal => {
-                const monthName = monthsNames[monthVal - 1];
-                selectedEgresos.forEach((egrId, index) => {
-                    const config = egresosConfig.find(e => e.id === egrId);
-                    const dataForDataset = labelsCity.map(city => {
+            window.selectedLocalEgresos.forEach((egrId) => {
+                const config = egresosConfig.find(e => e.id === egrId);
+                const colorIndex = egresosConfig.findIndex(e => e.id === egrId);
+                let datasetTotal = 0;
+                
+                const dataForDataset = labelsCity.map(city => {
+                    let totalExpense = 0;
+                    selectedMeses.forEach(monthVal => {
                         const record = dashboardData.find(d => d.cityName === city && d.month === monthVal);
-                        return record && record.expenses[egrId] ? record.expenses[egrId] : 0;
+                        if (record && record.expenses[egrId]) {
+                            totalExpense += record.expenses[egrId];
+                        }
                     });
-                    if(dataForDataset.some(val => val > 0)) {
-                        dsExpenses.push({ label: `${config.label} (${monthName})`, data: dataForDataset, backgroundColor: getColor(index), stack: `StackMes${monthVal}` });
-                    }
+                    datasetTotal += totalExpense;
+                    return totalExpense;
                 });
+
+                if(dataForDataset.some(val => val > 0)) {
+                    grandTotalLocalExpenses += datasetTotal;
+                    dsExpensesTemp.push({
+                        baseLabel: config.label,
+                        data: dataForDataset,
+                        backgroundColor: getColor(colorIndex),
+                        datasetTotal: datasetTotal
+                    });
+                }
+            });
+
+            // Mapeamos temporal a dataset final agregando el porcentaje al label
+            let dsExpenses = dsExpensesTemp.map(ds => {
+                let pct = grandTotalLocalExpenses > 0 ? ((ds.datasetTotal / grandTotalLocalExpenses) * 100).toFixed(1) + '%' : '0%';
+                return {
+                    label: `${ds.baseLabel} (${pct})`, 
+                    data: ds.data,
+                    backgroundColor: ds.backgroundColor
+                };
             });
 
             expensesChart.data = { labels: labelsCity, datasets: dsExpenses };
-            expensesChart.options.plugins.legend.display = dsExpenses.length <= 12;
+            expensesChart.options.plugins.legend.display = true; // Fuerza la leyenda a mostrarse siempre
             expensesChart.update();
 
             const activeMonths = Object.keys(monthlyTrend).filter(m => selectedMeses.includes(parseInt(m))).sort((a,b)=>a-b);
             const mLabels = activeMonths.map(m => monthsNames[m-1]);
 
-            // Chart 5: ADR vs Occ con anclajes actualizados
             adrOccChart.data = {
                 labels: mLabels,
                 datasets: [
-                    { label: 'Ocupación (%)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].ocup/adrTrend[m].count) : 0), yAxisID: 'y1', type: 'line', borderColor: '#bda269', tension: 0.3, datalabels: { align: 'top', anchor: 'end' } }, // Línea hacia arriba
-                    { label: 'AVG Rate ($)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].adr/adrTrend[m].count) : 0), yAxisID: 'y', type: 'bar', backgroundColor: '#52555c', borderRadius: 2, datalabels: { align: 'top', anchor: 'start' } } // Barras lo más abajo posible (en la base)
+                    { label: 'Ocupación (%)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].ocup/adrTrend[m].count) : 0), yAxisID: 'y1', type: 'line', borderColor: '#bda269', tension: 0.3, datalabels: { align: 'top', anchor: 'end' } }, 
+                    { label: 'AVG Rate ($)', data: activeMonths.map(m => adrTrend[m].count>0 ? (adrTrend[m].adr/adrTrend[m].count) : 0), yAxisID: 'y', type: 'bar', backgroundColor: '#52555c', borderRadius: 2, datalabels: { align: 'top', anchor: 'start' } } 
                 ]
             };
             adrOccChart.update();
