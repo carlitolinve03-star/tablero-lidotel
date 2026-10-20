@@ -245,7 +245,8 @@
                         <i class="fa-solid fa-eye"></i>
                     </button>
                 </div>
-                <div class="relative h-96 w-full flex justify-center"><canvas id="expensesChart"></canvas></div>
+                <!-- Incremento sustancial del alto a h-[600px] para dar espacio físico a los números -->
+                <div class="relative h-[600px] w-full flex justify-center"><canvas id="expensesChart"></canvas></div>
             </div>
         </div>
 
@@ -663,7 +664,7 @@
                                 });
                                 if (total === 0) return '';
                                 const pct = (value / total) * 100;
-                                return pct >= 5 ? pct.toFixed(1) + '%' : '';
+                                return pct.toFixed(1) + '%'; // Sin restricciones, dibuja siempre todos los porcentajes
                             }
                         },
                         tooltip: {
@@ -675,7 +676,6 @@
                                         total += ds.data[context.dataIndex] || 0;
                                     });
                                     const pct = total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
-                                    // Remove the (XX%) from the name just for the tooltip, to keep it clean
                                     const cleanLabel = context.dataset.label.split(' (')[0];
                                     return `${cleanLabel}: ${formatCurrency(val)} (${pct})`;
                                 }
@@ -803,7 +803,6 @@
 
             // Lógica ajustada para Egresos por Sede (Suma agrupada y porcentaje en la leyenda)
             let dsExpensesTemp = [];
-            let grandTotalLocalExpenses = 0;
             
             window.selectedLocalEgresos.forEach((egrId) => {
                 const config = egresosConfig.find(e => e.id === egrId);
@@ -823,7 +822,6 @@
                 });
 
                 if(dataForDataset.some(val => val > 0)) {
-                    grandTotalLocalExpenses += datasetTotal;
                     dsExpensesTemp.push({
                         baseLabel: config.label,
                         data: dataForDataset,
@@ -833,9 +831,9 @@
                 }
             });
 
-            // Mapeamos temporal a dataset final agregando el porcentaje al label
+            // Mapeamos a dataset final calculando el porcentaje en base al Gran Total general de Egresos para coincidir con el gráfico superior
             let dsExpenses = dsExpensesTemp.map(ds => {
-                let pct = grandTotalLocalExpenses > 0 ? ((ds.datasetTotal / grandTotalLocalExpenses) * 100).toFixed(1) + '%' : '0%';
+                let pct = grandTotalExpenses > 0 ? ((ds.datasetTotal / grandTotalExpenses) * 100).toFixed(1) + '%' : '0%';
                 return {
                     label: `${ds.baseLabel} (${pct})`, 
                     data: ds.data,
