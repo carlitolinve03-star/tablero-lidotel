@@ -382,7 +382,8 @@
             const sedesSet = new Set(dashboardData.map(d => d.cityName));
             const mesesSet = new Set(dashboardData.map(d => d.month).sort((a,b)=>a-b));
             
-            selectedSedes = Array.from(sedesSet);
+            // Se ordenan las sedes alfabéticamente por defecto
+            selectedSedes = Array.from(sedesSet).sort();
             selectedMeses = Array.from(mesesSet);
             selectedIngresos = ingresosConfig.map(i => i.id);
             selectedEgresos = egresosConfig.map(e => e.id);
@@ -845,7 +846,8 @@
             document.getElementById('kpi-occ').textContent = formatPercent(countRecords > 0 ? (sumOcupacion / countRecords) : 0);
             document.getElementById('kpi-adr').textContent = formatCurrency(countRecords > 0 ? (sumTarifa / countRecords) : 0);
 
-            const labelsCity = Object.keys(cityGrouping);
+            // Ordenamos también las etiquetas de las gráficas alfabéticamente para mantener consistencia visual
+            const labelsCity = Object.keys(cityGrouping).sort();
             cityChart.data = {
                 labels: labelsCity,
                 datasets: [
