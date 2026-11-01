@@ -131,30 +131,39 @@
 
     <div id="mainDashboardView">
         
-        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-            <div class="bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+        <!-- Fila de Tarjetas Flexibles con Reorganización Inteligente -->
+        <div class="grid grid-cols-2 md:grid-cols-4 xl:flex xl:flex-nowrap gap-4 mb-6" id="kpi-container">
+            <div id="kpi-wrap-rev" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
                 <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Ingresos Totales</p>
                 <h3 id="kpi-revenue" class="text-xl font-bold text-white">$0</h3>
             </div>
-            <div class="bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+            <div id="kpi-wrap-costs" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
                 <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Egresos Totales</p>
                 <h3 id="kpi-costs" class="text-xl font-bold text-white">$0</h3>
             </div>
-            <div class="bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+            <div id="kpi-wrap-ebitda" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
                 <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Utilidad Neta</p>
                 <h3 id="kpi-ebitda" class="text-xl font-bold text-accent">$0</h3>
             </div>
-            <div class="bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+            <div id="kpi-wrap-margin" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
                 <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Margen Rentabilidad</p>
                 <h3 id="kpi-margin" class="text-xl font-bold text-white">0%</h3>
             </div>
-            <div class="bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+            <div id="kpi-wrap-occ" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
                 <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Ocupación Promedio</p>
                 <h3 id="kpi-occ" class="text-xl font-bold text-white">0%</h3>
             </div>
-            <div class="bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+            <div id="kpi-wrap-adr" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
                 <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">AVG Rate</p>
                 <h3 id="kpi-adr" class="text-xl font-bold text-accent">$0</h3>
+            </div>
+            <div id="kpi-wrap-rooms" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+                <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Habitaciones</p>
+                <h3 id="kpi-rooms" class="text-xl font-bold text-white">0</h3>
+            </div>
+            <div id="kpi-wrap-guests" class="w-full xl:w-auto flex-1 min-w-[120px] flex-auto-transition bg-slatecard rounded-lg border border-graylight/50 p-4 shadow-sm hover:border-accent transition">
+                <p class="text-[11px] font-semibold text-textmuted uppercase mb-1">Huéspedes Totales</p>
+                <h3 id="kpi-guests" class="text-xl font-bold text-white">0</h3>
             </div>
         </div>
 
@@ -252,15 +261,31 @@
 
         <div class="flex justify-between items-center mt-4 border-t border-graylight/30 pt-4">
             
-            <div class="relative" id="container-vis">
-                <button id="btn-vis" class="text-graylight hover:text-textmuted text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-2 cursor-pointer" title="Configurar Gráficos">
-                    <i class="fa-solid fa-layer-group"></i> Ocultar/Mostrar Gráficos
-                </button>
-                <div id="dropdown-vis" class="absolute bottom-full left-0 mb-2 w-56 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content z-50">
-                    <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
-                        <span class="text-[10px] font-bold text-textmuted uppercase">Gráficos Visibles</span>
+            <div class="flex gap-4 items-center flex-wrap">
+                <!-- Dropdown de Gráficos -->
+                <div class="relative" id="container-vis">
+                    <button id="btn-vis" class="text-graylight hover:text-textmuted text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-2 cursor-pointer" title="Configurar Gráficos">
+                        <i class="fa-solid fa-layer-group"></i> Ocultar/Mostrar Gráficos
+                    </button>
+                    <div id="dropdown-vis" class="absolute bottom-full left-0 mb-2 w-56 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content z-50">
+                        <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
+                            <span class="text-[10px] font-bold text-textmuted uppercase">Gráficos Visibles</span>
+                        </div>
+                        <div id="list-vis" class="p-2 max-h-56 overflow-y-auto flex flex-col gap-1.5"></div>
                     </div>
-                    <div id="list-vis" class="p-2 max-h-56 overflow-y-auto flex flex-col gap-1.5"></div>
+                </div>
+
+                <!-- Nuevo Dropdown de Tarjetas KPI -->
+                <div class="relative" id="container-kpivis">
+                    <button id="btn-kpivis" class="text-graylight hover:text-textmuted text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-2 cursor-pointer" title="Configurar Tarjetas">
+                        <i class="fa-solid fa-address-card"></i> Ocultar/Mostrar Tarjetas
+                    </button>
+                    <div id="dropdown-kpivis" class="absolute bottom-full left-0 mb-2 w-56 bg-slatecard border border-graylight rounded shadow-2xl dropdown-content z-50">
+                        <div class="p-2 border-b border-graylight flex justify-between items-center bg-black/20">
+                            <span class="text-[10px] font-bold text-textmuted uppercase">Tarjetas Visibles</span>
+                        </div>
+                        <div id="list-kpivis" class="p-2 max-h-56 overflow-y-auto flex flex-col gap-1.5"></div>
+                    </div>
                 </div>
             </div>
 
@@ -323,8 +348,19 @@
             { id: 'card-exp', label: 'Egresos por Sede' }
         ];
 
+        const kpiVisibilityConfig = [
+            { id: 'kpi-wrap-rev', label: 'Ingresos Totales' },
+            { id: 'kpi-wrap-costs', label: 'Egresos Totales' },
+            { id: 'kpi-wrap-ebitda', label: 'Utilidad Neta' },
+            { id: 'kpi-wrap-margin', label: 'Margen Rentabilidad' },
+            { id: 'kpi-wrap-occ', label: 'Ocupación Promedio' },
+            { id: 'kpi-wrap-adr', label: 'AVG Rate' },
+            { id: 'kpi-wrap-rooms', label: 'Habitaciones' },
+            { id: 'kpi-wrap-guests', label: 'Huéspedes' }
+        ];
+
         function setupDropdowns() {
-            const setups = ['sede', 'mes', 'ing', 'egr', 'vis', 'local-egr'];
+            const setups = ['sede', 'mes', 'ing', 'egr', 'vis', 'kpivis', 'local-egr'];
             setups.forEach(type => {
                 const btn = document.getElementById(`btn-${type}`);
                 const dd = document.getElementById(`dropdown-${type}`);
@@ -384,20 +420,51 @@
             `).join('');
             window.updateLocalEgrLabel();
 
+            // --- INICIO MAGIA LOCAL STORAGE ---
+            const savedVis = JSON.parse(localStorage.getItem('lidotel_chart_vis')) || {};
             const listVis = document.getElementById('list-vis');
-            listVis.innerHTML = visibilityConfig.map(item => `
+            listVis.innerHTML = visibilityConfig.map(item => {
+                const isChecked = savedVis[item.id] !== false; // Si no hay registro, por defecto es true (visible)
+                return `
                 <label class="flex items-center gap-2 p-1.5 hover:bg-slatebg rounded cursor-pointer transition">
-                    <input type="checkbox" value="${item.id}" class="cb-gold" checked onchange="toggleCardVisibility('${item.id}', this)"> 
+                    <input type="checkbox" value="${item.id}" class="cb-gold" ${isChecked ? 'checked' : ''} onchange="toggleCardVisibility('${item.id}', this, 'chart')"> 
                     <span class="text-xs text-textmain">${item.label}</span>
                 </label>
-            `).join('');
+            `}).join('');
+
+            const savedKpiVis = JSON.parse(localStorage.getItem('lidotel_kpi_vis')) || {};
+            const listKpiVis = document.getElementById('list-kpivis');
+            listKpiVis.innerHTML = kpiVisibilityConfig.map(item => {
+                const isChecked = savedKpiVis[item.id] !== false; // Si no hay registro, por defecto es true (visible)
+                return `
+                <label class="flex items-center gap-2 p-1.5 hover:bg-slatebg rounded cursor-pointer transition">
+                    <input type="checkbox" value="${item.id}" class="cb-gold" ${isChecked ? 'checked' : ''} onchange="toggleCardVisibility('${item.id}', this, 'kpi')"> 
+                    <span class="text-xs text-textmain">${item.label}</span>
+                </label>
+            `}).join('');
+            
+            // Aplicar visibilidad inicial inmediatamente al cargar basándose en lo que guardó el usuario
+            visibilityConfig.forEach(item => {
+                document.getElementById(item.id).style.display = (savedVis[item.id] !== false) ? '' : 'none';
+            });
+            kpiVisibilityConfig.forEach(item => {
+                document.getElementById(item.id).style.display = (savedKpiVis[item.id] !== false) ? '' : 'none';
+            });
+            // --- FIN MAGIA LOCAL STORAGE ---
 
             updateFilterLabels();
         }
 
-        window.toggleCardVisibility = function(cardId, checkbox) {
+        window.toggleCardVisibility = function(cardId, checkbox, type = 'chart') {
             const card = document.getElementById(cardId);
-            card.style.display = checkbox.checked ? 'block' : 'none';
+            // Usamos display '' para que retome sus propiedades flexibles de Tailwind sin forzar 'block'
+            card.style.display = checkbox.checked ? '' : 'none';
+            
+            // Guardar silenciosamente la preferencia en la memoria del navegador
+            const storageKey = type === 'kpi' ? 'lidotel_kpi_vis' : 'lidotel_chart_vis';
+            let savedState = JSON.parse(localStorage.getItem(storageKey)) || {};
+            savedState[cardId] = checkbox.checked;
+            localStorage.setItem(storageKey, JSON.stringify(savedState));
         }
 
         window.toggleAll = function(type, checkAll = true) {
@@ -472,7 +539,7 @@
                 } else {
                     const sedes = ["Caracas", "Margarita", "Valencia", "Barquisimeto", "Paraguana", "San Cristobal"];
                     filas = sedes.flatMap(sede => Array.from({length: 6}, (_, i) => {
-                        let row = { Sede: sede, Mes: i+1, Ocupacion_Pct: Math.floor(40 + Math.random()*50), Tarifa_Promedio: Math.floor(80 + Math.random()*100) };
+                        let row = { Sede: sede, Mes: i+1, Ocupacion_Pct: Math.floor(40 + Math.random()*50), Tarifa_Promedio: Math.floor(80 + Math.random()*100), Huespedes: Math.floor(100 + Math.random()*500), Habitacion_Ocup: Math.floor(50 + Math.random()*200) };
                         ingresosConfig.forEach(ing => row[ing.id] = Math.floor((Math.random() * 50000) + 5000));
                         egresosConfig.forEach(egr => row[egr.id] = Math.floor((Math.random() * 15000) + 1000));
                         return row;
@@ -497,6 +564,8 @@
                             cityName: sede, month: mes,
                             ocupacion: getVal('Ocupacion_Pct') || getVal('Ocupacion'), 
                             tarifa: getVal('Tarifa_Promedio') || getVal('ADR'),
+                            huespedes: getVal('Huespedes') || getVal('Huéspedes') || getVal('Guests'),
+                            habitaciones: getVal('Habitacion Ocup') || getVal('Habitacion_Ocup') || getVal('Rooms'),
                             incomes: {}, expenses: {}
                         };
                         
@@ -535,7 +604,8 @@
                     icon.classList.add('fa-eye');
                     btnElement.classList.remove('text-accent');
                 } else {
-                    chartInstance.options.plugins.datalabels.display = (chartId === 'expenseDestChart' || chartId === 'revenueChart' || chartId === 'adrOccChart') ? true : 'auto';
+                    // Se fuerza el true para expensesChart y evitar recortes
+                    chartInstance.options.plugins.datalabels.display = (chartId === 'expenseDestChart' || chartId === 'revenueChart' || chartId === 'adrOccChart' || chartId === 'expensesChart') ? true : 'auto';
                     icon.classList.remove('fa-eye');
                     icon.classList.add('fa-eye-slash');
                     btnElement.classList.add('text-accent');
@@ -591,7 +661,16 @@
                     layout: { padding: 20 },
                     plugins: { 
                         legend: { position: 'right' },
-                        datalabels: { anchor: 'end', align: 'end', offset: 0 }
+                        datalabels: { 
+                            anchor: 'end', align: 'end', offset: 0,
+                            formatter: (value, context) => {
+                                if (value === 0 || value == null) return '';
+                                let total = 0;
+                                context.chart.data.datasets[0].data.forEach(d => total += d);
+                                if (total === 0) return '';
+                                return ((value / total) * 100).toFixed(1) + '%';
+                            }
+                        }
                     } 
                 } 
             });
@@ -652,10 +731,12 @@
                 data: { labels: [], datasets: [] }, 
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-                    scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: gridConfig, ticks: { callback: formatAxisNum } } }, 
+                    scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: gridConfig, ticks: { callback: formatAxisNum }, grace: '10%' } }, 
                     plugins: { 
                         legend: { position: 'right', display: true },
                         datalabels: {
+                            clip: false,
+                            font: { size: 9 },
                             formatter: (value, context) => {
                                 if (value === 0 || value == null) return '';
                                 let total = 0;
@@ -664,7 +745,7 @@
                                 });
                                 if (total === 0) return '';
                                 const pct = (value / total) * 100;
-                                return pct.toFixed(1) + '%'; // Sin restricciones, dibuja siempre todos los porcentajes
+                                return pct.toFixed(1) + '%'; 
                             }
                         },
                         tooltip: {
@@ -710,7 +791,7 @@
             let filteredData = dashboardData.filter(d => selectedSedes.includes(d.cityName) && selectedMeses.includes(d.month));
 
             let totalRev = 0, totalCost = 0;
-            let sumOcupacion = 0, sumTarifa = 0, countRecords = 0;
+            let sumOcupacion = 0, sumTarifa = 0, sumHuespedes = 0, sumHabitaciones = 0, countRecords = 0;
             
             let cityGrouping = {};
             let adrTrend = {};
@@ -738,7 +819,10 @@
 
                 totalRev += rowRev; totalCost += rowCost;
                 
-                sumOcupacion += d.ocupacion; sumTarifa += d.tarifa; countRecords++;
+                sumOcupacion += d.ocupacion; sumTarifa += d.tarifa; 
+                sumHuespedes += (d.huespedes || 0);
+                sumHabitaciones += (d.habitaciones || 0);
+                countRecords++;
 
                 cityGrouping[d.cityName].rev += rowRev; cityGrouping[d.cityName].cost += rowCost;
 
@@ -751,6 +835,8 @@
             const totalEbitda = totalRev - totalCost;
             const totalMargin = totalRev > 0 ? (totalEbitda / totalRev) * 100 : 0;
 
+            document.getElementById('kpi-guests').textContent = new Intl.NumberFormat('en-US').format(sumHuespedes);
+            document.getElementById('kpi-rooms').textContent = new Intl.NumberFormat('en-US').format(sumHabitaciones);
             document.getElementById('kpi-revenue').textContent = formatCurrency(totalRev);
             document.getElementById('kpi-costs').textContent = formatCurrency(totalCost);
             document.getElementById('kpi-ebitda').textContent = formatCurrency(totalEbitda);
@@ -788,13 +874,31 @@
                 }
             });
 
-            expenseDestData.sort((a, b) => b.amount - a.amount);
+            // Agrupación para menores de 1%
+            let finalExpenseDestData = [];
+            let variosTotal = 0;
+
+            expenseDestData.forEach(item => {
+                let pct = (item.amount / grandTotalExpenses) * 100;
+                if (pct < 1) {
+                    variosTotal += item.amount;
+                } else {
+                    finalExpenseDestData.push(item);
+                }
+            });
+
+            if (variosTotal > 0) {
+                finalExpenseDestData.push({ label: 'Varios (< 1%)', amount: variosTotal, color: '#475569' });
+            }
+
+            finalExpenseDestData.sort((a, b) => b.amount - a.amount);
+            
             expenseDestChart._customTotal = grandTotalExpenses || 1; 
             expenseDestChart.data = { 
-                labels: expenseDestData.map(d => d.label), 
+                labels: finalExpenseDestData.map(d => d.label), 
                 datasets: [{ 
-                    data: expenseDestData.map(d => d.amount), 
-                    backgroundColor: expenseDestData.map(d => d.color), 
+                    data: finalExpenseDestData.map(d => d.amount), 
+                    backgroundColor: finalExpenseDestData.map(d => d.color), 
                     borderRadius: 2,
                     maxBarThickness: 40 
                 }] 
