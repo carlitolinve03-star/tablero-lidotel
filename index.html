@@ -793,6 +793,7 @@
 
             let totalRev = 0, totalCost = 0;
             let sumOcupacion = 0, sumTarifa = 0, sumHuespedes = 0, sumHabitaciones = 0, countRecords = 0;
+            let sumIngHabitaciones = 0, sumIngDiamond = 0;
             
             let cityGrouping = {};
             let adrTrend = {};
@@ -823,6 +824,8 @@
                 sumOcupacion += d.ocupacion; sumTarifa += d.tarifa; 
                 sumHuespedes += (d.huespedes || 0);
                 sumHabitaciones += (d.habitaciones || 0);
+                sumIngHabitaciones += (d.incomes['Ing_Habitaciones'] || 0); 
+                sumIngDiamond += (d.incomes['Ing_Diamond'] || 0);
                 countRecords++;
 
                 cityGrouping[d.cityName].rev += rowRev; cityGrouping[d.cityName].cost += rowCost;
@@ -844,7 +847,7 @@
             document.getElementById('kpi-ebitda').className = `text-xl font-bold ${totalEbitda >= 0 ? 'text-accent' : 'text-textmuted'}`;
             document.getElementById('kpi-margin').textContent = formatPercent(totalMargin);
             document.getElementById('kpi-occ').textContent = formatPercent(countRecords > 0 ? (sumOcupacion / countRecords) : 0);
-            document.getElementById('kpi-adr').textContent = formatCurrency(countRecords > 0 ? (sumTarifa / countRecords) : 0);
+            document.getElementById('kpi-adr').textContent = formatCurrency(sumHabitaciones > 0 ? ((sumIngHabitaciones + sumIngDiamond) / sumHabitaciones) : 0);
 
             // Ordenamos también las etiquetas de las gráficas alfabéticamente para mantener consistencia visual
             const labelsCity = Object.keys(cityGrouping).sort();
